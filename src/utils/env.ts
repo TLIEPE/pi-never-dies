@@ -23,6 +23,9 @@ export const loadConfig = (): AppConfig => {
   const telegramBotToken = must(process.env.TELEGRAM_BOT_TOKEN, "TELEGRAM_BOT_TOKEN");
   const cursorApiKey = must(process.env.CURSOR_API_KEY, "CURSOR_API_KEY");
   const cursorModelId = must(process.env.CURSOR_MODEL_ID, "CURSOR_MODEL_ID");
+  const grokApiKey = must(process.env.GROK_API_KEY, "GROK_API_KEY");
+  const grokModelId = must(process.env.GROK_MODEL_ID, "GROK_MODEL_ID");
+  const grokBaseUrl = (process.env.GROK_BASE_URL ?? "https://api.x.ai/v1").trim();
   const telegramAllowedUserIds = parseAllowedUserIds(
     process.env.TELEGRAM_ALLOWED_USER_IDS ?? ""
   );
@@ -42,6 +45,9 @@ export const loadConfig = (): AppConfig => {
     telegramAllowedUserIds,
     cursorApiKey,
     cursorModelId,
+    grokApiKey,
+    grokModelId,
+    grokBaseUrl,
     jobsFilePath,
     heartbeatIntervalMs,
     a2aCardsFilePath

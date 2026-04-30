@@ -58,6 +58,9 @@ export TELEGRAM_BOT_TOKEN="123456:your_bot_token"
 export TELEGRAM_ALLOWED_USER_IDS="123456789"
 export CURSOR_API_KEY="cursor_api_key_here"
 export CURSOR_MODEL_ID="composer-2"
+export GROK_API_KEY="xai_api_key_here"
+export GROK_MODEL_ID="grok-4-20"
+export GROK_BASE_URL="https://api.x.ai/v1"
 export AZURE_WORKER_BEARER_TOKEN="optional_for_bearer_cards"
 ```
 
@@ -78,7 +81,7 @@ npm start
 
 - `/help` - Uebersicht
 - `/chatmode` - aktuellen Chat-Mode anzeigen
-- `/chatmode <cursor|local>` - Freitext-Engine umschalten
+- `/chatmode <grok|local>` - Freitext-Engine umschalten
 - `/cards` - A2A-Cards anzeigen
 - `/jobs` - letzte Jobs
 - `/plan <text>` - Cursor-basierter Ausfuehrungsplan
@@ -215,6 +218,9 @@ TELEGRAM_BOT_TOKEN=...
 TELEGRAM_ALLOWED_USER_IDS=123456789
 CURSOR_API_KEY=...
 CURSOR_MODEL_ID=composer-2
+GROK_API_KEY=...
+GROK_MODEL_ID=grok-4-20
+GROK_BASE_URL=https://api.x.ai/v1
 CURSOR_RIPGREP_PATH=/usr/bin/rg
 AZURE_WORKER_BEARER_TOKEN=...
 ```

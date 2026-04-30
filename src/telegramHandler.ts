@@ -9,7 +9,7 @@ const helpText = [
   "",
   "`/help` - Show command overview",
   "`/chatmode` - Show current chat mode",
-  "`/chatmode <cursor|local>` - Switch free-chat engine",
+  "`/chatmode <grok|local>` - Switch free-chat engine",
   "`/cards` - List available A2A cards",
   "`/jobs` - List latest jobs",
   "`/status` - Show orchestrator status",
@@ -62,8 +62,8 @@ export const buildTelegramBot = (input: {
         await ctx.replyWithMarkdown(`🎛️ Aktueller Chat-Mode: *${currentMode}*`);
         return;
       }
-      if (modeInput !== "cursor" && modeInput !== "local") {
-        await ctx.replyWithMarkdown("Bitte nutze: `/chatmode cursor` oder `/chatmode local`");
+      if (modeInput !== "grok" && modeInput !== "local") {
+        await ctx.replyWithMarkdown("Bitte nutze: `/chatmode grok` oder `/chatmode local`");
         return;
       }
       await input.actions.setChatMode(modeInput);

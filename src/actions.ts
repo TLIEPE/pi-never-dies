@@ -1,5 +1,6 @@
 import { A2AClient } from "./a2aClient";
 import { CursorClient } from "./cursorClient";
+import { GrokClient } from "./grokClient";
 import { JobManager } from "./jobManager";
 import { ChatMode, Job } from "./types";
 
@@ -7,7 +8,8 @@ export class Actions {
   constructor(
     private readonly jobManager: JobManager,
     private readonly a2aClient: A2AClient,
-    private readonly cursorClient: CursorClient
+    private readonly cursorClient: CursorClient,
+    private readonly grokClient: GrokClient
   ) {}
 
   async handlePlanningRequest(prompt: string): Promise<string> {
@@ -70,14 +72,13 @@ export class Actions {
 
   async chat(message: string): Promise<string> {
     const mode = await this.getChatMode();
-    if (mode === "cursor") {
+    if (mode === "grok") {
       try {
-        return await this.cursorClient.chatFreestyle(message);
+        return await this.grokClient.chatFreestyle(message);
       } catch (error) {
-        // Fail open so chat keeps working even if Cursor SDK shape/auth changes.
         const fallback = await this.chatViaLocalLlmA2A(message);
-        const reason = error instanceof Error ? error.message : "Unknown Cursor SDK error";
-        return `Cursor-Mode ist gerade gestört (${reason}). Fallback auf Local-LLM:\n\n${fallback}`;
+        const reason = error instanceof Error ? error.message : "Unknown Grok API error";
+        return `Grok-Mode ist gerade gestört (${reason}). Fallback auf Local-LLM:\n\n${fallback}`;
       }
     }
     return this.chatViaLocalLlmA2A(message);

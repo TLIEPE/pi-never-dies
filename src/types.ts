@@ -1,5 +1,5 @@
 export type JobStatus = "pending" | "running" | "completed" | "failed";
-export type ChatMode = "cursor" | "local";
+export type ChatMode = "grok" | "local";
 
 export interface Job {
   id: string;
@@ -48,6 +48,9 @@ export interface AppConfig {
   telegramAllowedUserIds: number[];
   cursorApiKey: string;
   cursorModelId: string;
+  grokApiKey: string;
+  grokModelId: string;
+  grokBaseUrl: string;
   jobsFilePath: string;
   heartbeatIntervalMs: number;
   a2aCardsFilePath: string;

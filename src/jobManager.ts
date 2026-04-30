@@ -2,7 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { ChatMode, Job, JobsFile, JobStatus } from "./types";
 
-const EMPTY_JOBS_FILE: JobsFile = { jobs: [], lastHeartbeatAt: null, chatMode: "cursor" };
+const EMPTY_JOBS_FILE: JobsFile = { jobs: [], lastHeartbeatAt: null, chatMode: "local" };
 
 export class JobManager {
   constructor(private readonly jobsFilePath: string) {}
@@ -84,7 +84,7 @@ export class JobManager {
 
   async getChatMode(): Promise<ChatMode> {
     const data = await this.readData();
-    return data.chatMode ?? "cursor";
+    return data.chatMode === "grok" || data.chatMode === "local" ? data.chatMode : "local";
   }
 
   async setChatMode(mode: ChatMode): Promise<void> {
@@ -104,7 +104,10 @@ export class JobManager {
       return {
         jobs: parsed.jobs,
         lastHeartbeatAt: parsed.lastHeartbeatAt ?? null,
-        chatMode: parsed.chatMode ?? "cursor"
+        chatMode:
+          parsed.chatMode === "grok" || parsed.chatMode === "local"
+            ? parsed.chatMode
+            : "local"
       };
     } catch {
       return { ...EMPTY_JOBS_FILE };

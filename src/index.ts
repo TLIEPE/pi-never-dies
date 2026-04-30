@@ -1,6 +1,7 @@
 import { Actions } from "./actions";
 import { A2AClient } from "./a2aClient";
 import { CursorClient } from "./cursorClient";
+import { GrokClient } from "./grokClient";
 import { JobManager } from "./jobManager";
 import { buildTelegramBot } from "./telegramHandler";
 import { loadConfig } from "./utils/env";
@@ -34,7 +35,8 @@ const bootstrap = async (): Promise<void> => {
   await a2aClient.ensureCardsFile();
 
   const cursorClient = new CursorClient(config.cursorApiKey, config.cursorModelId);
-  const actions = new Actions(jobManager, a2aClient, cursorClient);
+  const grokClient = new GrokClient(config.grokApiKey, config.grokModelId, config.grokBaseUrl);
+  const actions = new Actions(jobManager, a2aClient, cursorClient, grokClient);
 
   const bot = buildTelegramBot({
     botToken: config.telegramBotToken,
