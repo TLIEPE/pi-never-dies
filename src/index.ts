@@ -6,7 +6,25 @@ import { buildTelegramBot } from "./telegramHandler";
 import { loadConfig } from "./utils/env";
 import { logger } from "./utils/logger";
 
+const ensureRipgrepForCursorSdk = (): void => {
+  const configured = process.env.CURSOR_RIPGREP_PATH?.trim();
+  const ripgrepPath = configured && configured.length > 0 ? configured : "/usr/bin/rg";
+  process.env.CURSOR_RIPGREP_PATH = ripgrepPath;
+
+  const currentPath = process.env.PATH ?? "";
+  const rgDir = ripgrepPath.includes("/") ? ripgrepPath.slice(0, ripgrepPath.lastIndexOf("/")) : "";
+  if (!rgDir) {
+    return;
+  }
+
+  const parts = currentPath.split(":").filter(Boolean);
+  if (!parts.includes(rgDir)) {
+    process.env.PATH = [rgDir, ...parts].join(":");
+  }
+};
+
 const bootstrap = async (): Promise<void> => {
+  ensureRipgrepForCursorSdk();
   const config = loadConfig();
 
   const jobManager = new JobManager(config.jobsFilePath);
