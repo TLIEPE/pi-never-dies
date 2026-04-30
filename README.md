@@ -14,6 +14,7 @@ Der User spricht nur per Telegram mit dem System, der Orchestrator delegiert Arb
 - Cursor SDK (`@cursor/sdk`) als zentrales Reasoning-Hirn
 - Interner Heartbeat-Scheduler im Prozess (jede Minute)
 - JSON-Storage fuer Jobs unter `src/data/jobs.json`
+- Chat-Verlauf separat unter `src/data/chat-memory.json`
 - A2A-Card-Verwaltung und Invokes ueber HTTP
 - Fehlerrobuste, userfreundliche Telegram-Antworten
 
@@ -30,6 +31,7 @@ src/
 ├── types.ts
 ├── data/
 │   ├── jobs.json
+│   ├── chat-memory.json
 │   └── a2a-cards.json
 └── utils/
     ├── env.ts

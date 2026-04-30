@@ -28,7 +28,7 @@ const bootstrap = async (): Promise<void> => {
   ensureRipgrepForCursorSdk();
   const config = loadConfig();
 
-  const jobManager = new JobManager(config.jobsFilePath);
+  const jobManager = new JobManager(config.jobsFilePath, config.chatMemoryFilePath);
   await jobManager.ensureStore();
 
   const a2aClient = new A2AClient(config.a2aCardsFilePath);

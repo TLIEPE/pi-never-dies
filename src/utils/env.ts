@@ -37,6 +37,7 @@ export const loadConfig = (): AppConfig => {
   }
 
   const jobsFilePath = path.resolve(process.cwd(), "src/data/jobs.json");
+  const chatMemoryFilePath = path.resolve(process.cwd(), "src/data/chat-memory.json");
   const heartbeatIntervalMs = 60_000;
   const a2aCardsFilePath = path.resolve(process.cwd(), "src/data/a2a-cards.json");
 
@@ -49,6 +50,7 @@ export const loadConfig = (): AppConfig => {
     grokModelId,
     grokBaseUrl,
     jobsFilePath,
+    chatMemoryFilePath,
     heartbeatIntervalMs,
     a2aCardsFilePath
   };

@@ -24,7 +24,10 @@ export interface JobsFile {
   jobs: Job[];
   lastHeartbeatAt: string | null;
   chatMode: ChatMode;
-  chatMemory: Record<string, ChatHistoryEntry[]>;
+}
+
+export interface ChatMemoryFile {
+  users: Record<string, ChatHistoryEntry[]>;
 }
 
 export interface A2ACard {
@@ -60,6 +63,7 @@ export interface AppConfig {
   grokModelId: string;
   grokBaseUrl: string;
   jobsFilePath: string;
+  chatMemoryFilePath: string;
   heartbeatIntervalMs: number;
   a2aCardsFilePath: string;
 }

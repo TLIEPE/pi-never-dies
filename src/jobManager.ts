@@ -1,16 +1,19 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { ChatHistoryEntry, ChatMode, Job, JobsFile, JobStatus } from "./types";
+import { ChatHistoryEntry, ChatMemoryFile, ChatMode, Job, JobsFile, JobStatus } from "./types";
 
 const EMPTY_JOBS_FILE: JobsFile = {
   jobs: [],
   lastHeartbeatAt: null,
-  chatMode: "local",
-  chatMemory: {}
+  chatMode: "local"
 };
+const EMPTY_CHAT_MEMORY_FILE: ChatMemoryFile = { users: {} };
 
 export class JobManager {
-  constructor(private readonly jobsFilePath: string) {}
+  constructor(
+    private readonly jobsFilePath: string,
+    private readonly chatMemoryFilePath: string
+  ) {}
 
   async ensureStore(): Promise<void> {
     await fs.mkdir(path.dirname(this.jobsFilePath), { recursive: true });
@@ -18,6 +21,12 @@ export class JobManager {
       await fs.access(this.jobsFilePath);
     } catch {
       await this.writeData(EMPTY_JOBS_FILE);
+    }
+    await fs.mkdir(path.dirname(this.chatMemoryFilePath), { recursive: true });
+    try {
+      await fs.access(this.chatMemoryFilePath);
+    } catch {
+      await this.writeChatMemoryData(EMPTY_CHAT_MEMORY_FILE);
     }
   }
 
@@ -99,8 +108,8 @@ export class JobManager {
   }
 
   async getChatHistory(userId: string): Promise<ChatHistoryEntry[]> {
-    const data = await this.readData();
-    return data.chatMemory[userId] ?? [];
+    const data = await this.readChatMemoryData();
+    return data.users[userId] ?? [];
   }
 
   async appendChatHistory(
@@ -108,11 +117,11 @@ export class JobManager {
     entries: ChatHistoryEntry[],
     maxEntries: number
   ): Promise<void> {
-    const data = await this.readData();
-    const current = data.chatMemory[userId] ?? [];
+    const data = await this.readChatMemoryData();
+    const current = data.users[userId] ?? [];
     const merged = [...current, ...entries];
-    data.chatMemory[userId] = merged.slice(Math.max(0, merged.length - maxEntries));
-    await this.writeData(data);
+    data.users[userId] = merged.slice(Math.max(0, merged.length - maxEntries));
+    await this.writeChatMemoryData(data);
   }
 
   private async readData(): Promise<JobsFile> {
@@ -129,8 +138,7 @@ export class JobManager {
         chatMode:
           parsed.chatMode === "grok" || parsed.chatMode === "local"
             ? parsed.chatMode
-            : "local",
-        chatMemory: parsed.chatMemory && typeof parsed.chatMemory === "object" ? parsed.chatMemory : {}
+            : "local"
       };
     } catch {
       return { ...EMPTY_JOBS_FILE };
@@ -140,5 +148,23 @@ export class JobManager {
   private async writeData(content: JobsFile): Promise<void> {
     const payload = `${JSON.stringify(content, null, 2)}\n`;
     await fs.writeFile(this.jobsFilePath, payload, "utf8");
+  }
+
+  private async readChatMemoryData(): Promise<ChatMemoryFile> {
+    await this.ensureStore();
+    const raw = await fs.readFile(this.chatMemoryFilePath, "utf8");
+    try {
+      const parsed = JSON.parse(raw) as ChatMemoryFile;
+      return {
+        users: parsed.users && typeof parsed.users === "object" ? parsed.users : {}
+      };
+    } catch {
+      return { ...EMPTY_CHAT_MEMORY_FILE };
+    }
+  }
+
+  private async writeChatMemoryData(content: ChatMemoryFile): Promise<void> {
+    const payload = `${JSON.stringify(content, null, 2)}\n`;
+    await fs.writeFile(this.chatMemoryFilePath, payload, "utf8");
   }
 }
