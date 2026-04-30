@@ -57,7 +57,7 @@ npm install
 export TELEGRAM_BOT_TOKEN="123456:your_bot_token"
 export TELEGRAM_ALLOWED_USER_IDS="123456789"
 export CURSOR_API_KEY="cursor_api_key_here"
-export CURSOR_MODEL_ID="composer-2-fast"
+export CURSOR_MODEL_ID="composer-2"
 export AZURE_WORKER_BEARER_TOKEN="optional_for_bearer_cards"
 ```
 
@@ -188,6 +188,49 @@ module.exports = {
 - Tokens nur ueber sichere Environment-Variablen setzen
 - Logs per `journalctl -u pi-never-dies -f` oder `pm2 logs`
 - Health-Checks ueber Heartbeat-Feld und `/jobs`
+
+## Raspberry Pi ENV Setup (Linux global)
+
+Wenn du die Variablen nicht jedes Mal manuell laden willst, nutze auf dem Pi:
+
+`/etc/environment`
+
+Bearbeiten:
+
+```bash
+sudo nano /etc/environment
+```
+
+Wichtiges Format:
+
+- nur `KEY=VALUE`
+- kein `export`
+- eine Variable pro Zeile
+- moeglichst keine Kommentare
+
+Beispiel:
+
+```env
+TELEGRAM_BOT_TOKEN=...
+TELEGRAM_ALLOWED_USER_IDS=123456789
+CURSOR_API_KEY=...
+CURSOR_MODEL_ID=composer-2
+AZURE_WORKER_BEARER_TOKEN=...
+```
+
+Nach Aenderungen neu einloggen oder rebooten:
+
+```bash
+sudo reboot
+```
+
+Dann PM2 mit neuen Variablen neu laden:
+
+```bash
+pm2 restart pi-never-dies --update-env
+pm2 status
+pm2 logs pi-never-dies --lines 40
+```
 
 ## Naechste sinnvolle Schritte
 
