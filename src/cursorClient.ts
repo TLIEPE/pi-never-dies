@@ -4,7 +4,7 @@ interface CursorAgentLike {
   prompt: (
     message: string,
     options?: { apiKey?: string; model?: { id: string } }
-  ) => Promise<{ result?: string }>;
+  ) => Promise<unknown>;
 }
 
 // Wraps the official Cursor SDK behind one stable project API.
@@ -53,7 +53,7 @@ export class CursorClient {
       apiKey: this.apiKey,
       model: { id: this.modelId }
     });
-    return (response.result ?? "Kein Plan vom Cursor SDK erhalten.").trim();
+    return this.extractTextFromPromptResponse(response);
   }
 
   async chatFreestyle(message: string): Promise<string> {
@@ -75,6 +75,40 @@ export class CursorClient {
       apiKey: this.apiKey,
       model: { id: this.modelId }
     });
-    return (response.result ?? "Keine Antwort vom Cursor SDK erhalten.").trim();
+    return this.extractTextFromPromptResponse(response);
+  }
+
+  private extractTextFromPromptResponse(response: unknown): string {
+    if (typeof response === "string" && response.trim()) {
+      return response.trim();
+    }
+
+    if (response && typeof response === "object") {
+      const obj = response as Record<string, unknown>;
+
+      const directCandidates = ["result", "text", "output", "message"];
+      for (const key of directCandidates) {
+        const value = obj[key];
+        if (typeof value === "string" && value.trim()) {
+          return value.trim();
+        }
+      }
+
+      if (obj.result && typeof obj.result === "object") {
+        const nested = obj.result as Record<string, unknown>;
+        for (const key of ["text", "output", "message", "result"]) {
+          const value = nested[key];
+          if (typeof value === "string" && value.trim()) {
+            return value.trim();
+          }
+        }
+      }
+    }
+
+    const summary =
+      response && typeof response === "object"
+        ? `keys=[${Object.keys(response as Record<string, unknown>).join(", ")}]`
+        : `type=${typeof response}`;
+    throw new Error(`Cursor SDK returned no usable text (${summary})`);
   }
 }
