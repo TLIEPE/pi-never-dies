@@ -207,7 +207,7 @@ export const buildTelegramBot = (input: {
     try {
       const reply = await input.actions.chat(ctx.message.text);
       const safeReply = reply.length > 3500 ? `${reply.slice(0, 3500)}...` : reply;
-      await ctx.replyWithMarkdown(`💬 ${safeReply}`);
+      await ctx.reply(`💬 ${safeReply}`);
     } catch (error) {
       logger.error("Failed to handle freestyle chat", error);
       await ctx.reply(

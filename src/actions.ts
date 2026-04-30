@@ -71,7 +71,14 @@ export class Actions {
   async chat(message: string): Promise<string> {
     const mode = await this.getChatMode();
     if (mode === "cursor") {
-      return this.cursorClient.chatFreestyle(message);
+      try {
+        return await this.cursorClient.chatFreestyle(message);
+      } catch (error) {
+        // Fail open so chat keeps working even if Cursor SDK shape/auth changes.
+        const fallback = await this.chatViaLocalLlmA2A(message);
+        const reason = error instanceof Error ? error.message : "Unknown Cursor SDK error";
+        return `Cursor-Mode ist gerade gestört (${reason}). Fallback auf Local-LLM:\n\n${fallback}`;
+      }
     }
     return this.chatViaLocalLlmA2A(message);
   }

@@ -27,6 +27,10 @@ export class CursorClient {
     const sdk = (await import("@cursor/sdk")) as {
       createClient?: (options: CursorCreateClientOptions) => CursorClientLike;
       CursorClient?: new (options: CursorCreateClientOptions) => CursorClientLike;
+      default?: {
+        createClient?: (options: CursorCreateClientOptions) => CursorClientLike;
+        CursorClient?: new (options: CursorCreateClientOptions) => CursorClientLike;
+      };
     };
 
     if (typeof sdk.createClient === "function") {
@@ -39,7 +43,18 @@ export class CursorClient {
       return;
     }
 
-    throw new Error("Unsupported @cursor/sdk API shape. Please update cursorClient.ts.");
+    if (sdk.default && typeof sdk.default.createClient === "function") {
+      this.sdkClient = sdk.default.createClient({ apiKey: this.apiKey });
+      return;
+    }
+
+    if (sdk.default?.CursorClient) {
+      this.sdkClient = new sdk.default.CursorClient({ apiKey: this.apiKey });
+      return;
+    }
+
+    const keys = Object.keys(sdk).join(", ");
+    throw new Error(`Unsupported @cursor/sdk API shape. Export keys: [${keys}]`);
   }
 
   async createExecutionPlan(prompt: string, cards: A2ACard[], jobs: Job[]): Promise<string> {
