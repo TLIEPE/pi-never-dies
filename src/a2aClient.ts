@@ -53,11 +53,20 @@ export class A2AClient {
       headers.Authorization = `Bearer ${token}`;
     }
 
+    const requestBody =
+      new URL(card.endpoint).pathname === "/a2a/task"
+        ? {
+            task_id: request.taskId ?? crypto.randomUUID(),
+            action: request.action,
+            input: request.payload
+          }
+        : request;
+
     try {
       const response = await fetch(card.endpoint, {
         method: "POST",
         headers,
-        body: JSON.stringify(request)
+        body: JSON.stringify(requestBody)
       });
 
       if (!response.ok) {

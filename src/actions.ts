@@ -1,7 +1,7 @@
 import { A2AClient } from "./a2aClient";
 import { CursorClient } from "./cursorClient";
 import { JobManager } from "./jobManager";
-import { Job } from "./types";
+import { ChatMode, Job } from "./types";
 
 export class Actions {
   constructor(
@@ -58,5 +58,69 @@ export class Actions {
     return this.jobManager.updateJobStatus(job.id, "completed", {
       output: JSON.stringify(response.result, null, 2)
     });
+  }
+
+  async getChatMode(): Promise<ChatMode> {
+    return this.jobManager.getChatMode();
+  }
+
+  async setChatMode(mode: ChatMode): Promise<void> {
+    await this.jobManager.setChatMode(mode);
+  }
+
+  async chat(message: string): Promise<string> {
+    const mode = await this.getChatMode();
+    if (mode === "cursor") {
+      return this.cursorClient.chatFreestyle(message);
+    }
+    return this.chatViaLocalLlmA2A(message);
+  }
+
+  private async chatViaLocalLlmA2A(message: string): Promise<string> {
+    const response = await this.a2aClient.invokeCard("tesla-sentiment-llm", {
+      action: "generate",
+      payload: {
+        prompt: `Antworte locker und humorvoll auf Deutsch in maximal 4 Saetzen: ${message}`,
+        temperature: 0.5,
+        max_tokens: 220
+      }
+    });
+
+    if (!response.success) {
+      throw new Error(response.error ?? "Local LLM A2A call failed");
+    }
+
+    const resultText = this.extractA2AText(response.result);
+    return this.stripThinking(resultText);
+  }
+
+  private extractA2AText(result: unknown): string {
+    if (typeof result === "string") {
+      return result;
+    }
+    if (result && typeof result === "object") {
+      const maybeObj = result as Record<string, unknown>;
+      if (typeof maybeObj.text === "string") {
+        return maybeObj.text;
+      }
+      if (
+        maybeObj.result &&
+        typeof maybeObj.result === "object" &&
+        typeof (maybeObj.result as Record<string, unknown>).text === "string"
+      ) {
+        return (maybeObj.result as Record<string, string>).text;
+      }
+    }
+    return JSON.stringify(result, null, 2);
+  }
+
+  private stripThinking(raw: string): string {
+    const marker = "Thinking Process:";
+    if (!raw.includes(marker)) {
+      return raw.trim();
+    }
+    const lines = raw.split("\n").filter((line) => line.trim().length > 0);
+    const lastLine = lines[lines.length - 1] ?? raw;
+    return lastLine.trim();
   }
 }

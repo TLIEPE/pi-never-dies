@@ -64,4 +64,23 @@ export class CursorClient {
     const response = await this.sdkClient.chat({ system, user });
     return response.text.trim();
   }
+
+  async chatFreestyle(message: string): Promise<string> {
+    await this.initialize();
+    if (!this.sdkClient) {
+      throw new Error("Cursor SDK client not initialized");
+    }
+
+    const system = [
+      "You are pi-never-dies, a witty but concise assistant living on a Raspberry Pi.",
+      "Answer in German unless the user clearly requests another language.",
+      "Keep responses practical, friendly, and short."
+    ].join(" ");
+
+    const response = await this.sdkClient.chat({
+      system,
+      user: message
+    });
+    return response.text.trim();
+  }
 }

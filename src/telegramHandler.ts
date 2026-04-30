@@ -8,6 +8,8 @@ const helpText = [
   "🤖 *pi-never-dies* commands",
   "",
   "`/help` - Show command overview",
+  "`/chatmode` - Show current chat mode",
+  "`/chatmode <cursor|local>` - Switch free-chat engine",
   "`/cards` - List available A2A cards",
   "`/jobs` - List latest jobs",
   "`/status` - Show orchestrator status",
@@ -50,6 +52,26 @@ export const buildTelegramBot = (input: {
 
   bot.command("help", async (ctx) => {
     await ctx.replyWithMarkdown(helpText);
+  });
+
+  bot.command("chatmode", async (ctx) => {
+    try {
+      const modeInput = ctx.message.text.replace("/chatmode", "").trim().toLowerCase();
+      if (!modeInput) {
+        const currentMode = await input.actions.getChatMode();
+        await ctx.replyWithMarkdown(`🎛️ Aktueller Chat-Mode: *${currentMode}*`);
+        return;
+      }
+      if (modeInput !== "cursor" && modeInput !== "local") {
+        await ctx.replyWithMarkdown("Bitte nutze: `/chatmode cursor` oder `/chatmode local`");
+        return;
+      }
+      await input.actions.setChatMode(modeInput);
+      await ctx.replyWithMarkdown(`✅ Chat-Mode gewechselt auf: *${modeInput}*`);
+    } catch (error) {
+      logger.error("Failed to handle /chatmode", error);
+      await ctx.reply(friendlyError);
+    }
   });
 
   bot.command("cards", async (ctx) => {
@@ -175,6 +197,22 @@ export const buildTelegramBot = (input: {
     } catch (error) {
       logger.error("Failed to handle /job", error);
       await ctx.reply(friendlyError);
+    }
+  });
+
+  bot.on("text", async (ctx) => {
+    if (ctx.message.text.startsWith("/")) {
+      return;
+    }
+    try {
+      const reply = await input.actions.chat(ctx.message.text);
+      const safeReply = reply.length > 3500 ? `${reply.slice(0, 3500)}...` : reply;
+      await ctx.replyWithMarkdown(`💬 ${safeReply}`);
+    } catch (error) {
+      logger.error("Failed to handle freestyle chat", error);
+      await ctx.reply(
+        "Ich konnte gerade nicht antworten. Prüfe bitte den Chat-Mode und die A2A-Card-Verbindung."
+      );
     }
   });
 

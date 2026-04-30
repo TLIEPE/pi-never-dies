@@ -9,5 +9,15 @@
       "type": "bearer",
       "tokenEnv": "AZURE_WORKER_BEARER_TOKEN"
     }
+  },
+  {
+    "id": "tesla-sentiment-llm",
+    "name": "Tesla Sentiment LLM",
+    "description": "Local/remote LLM card for free-chat and sentiment tasks via A2A.",
+    "endpoint": "https://tesla-news-sentiment.blackwave-ff51aa52.eastus.azurecontainerapps.io/a2a/task",
+    "capabilities": ["generate", "news_sentiment"],
+    "auth": {
+      "type": "none"
+    }
   }
 ]

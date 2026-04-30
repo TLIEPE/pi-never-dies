@@ -76,6 +76,8 @@ npm start
 ## Telegram-Kommandos
 
 - `/help` - Uebersicht
+- `/chatmode` - aktuellen Chat-Mode anzeigen
+- `/chatmode <cursor|local>` - Freitext-Engine umschalten
 - `/cards` - A2A-Cards anzeigen
 - `/jobs` - letzte Jobs
 - `/plan <text>` - Cursor-basierter Ausfuehrungsplan

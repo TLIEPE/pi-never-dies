@@ -1,4 +1,5 @@
 export type JobStatus = "pending" | "running" | "completed" | "failed";
+export type ChatMode = "cursor" | "local";
 
 export interface Job {
   id: string;
@@ -15,6 +16,7 @@ export interface Job {
 export interface JobsFile {
   jobs: Job[];
   lastHeartbeatAt: string | null;
+  chatMode: ChatMode;
 }
 
 export interface A2ACard {
@@ -32,6 +34,7 @@ export interface A2ACard {
 export interface A2AInvokeRequest {
   action: string;
   payload: Record<string, unknown>;
+  taskId?: string;
 }
 
 export interface A2AInvokeResponse {

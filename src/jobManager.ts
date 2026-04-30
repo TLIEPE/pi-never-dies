@@ -1,8 +1,8 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { Job, JobsFile, JobStatus } from "./types";
+import { ChatMode, Job, JobsFile, JobStatus } from "./types";
 
-const EMPTY_JOBS_FILE: JobsFile = { jobs: [], lastHeartbeatAt: null };
+const EMPTY_JOBS_FILE: JobsFile = { jobs: [], lastHeartbeatAt: null, chatMode: "cursor" };
 
 export class JobManager {
   constructor(private readonly jobsFilePath: string) {}
@@ -82,6 +82,17 @@ export class JobManager {
     return data.jobs.filter((job) => job.status === "running").length;
   }
 
+  async getChatMode(): Promise<ChatMode> {
+    const data = await this.readData();
+    return data.chatMode ?? "cursor";
+  }
+
+  async setChatMode(mode: ChatMode): Promise<void> {
+    const data = await this.readData();
+    data.chatMode = mode;
+    await this.writeData(data);
+  }
+
   private async readData(): Promise<JobsFile> {
     await this.ensureStore();
     const raw = await fs.readFile(this.jobsFilePath, "utf8");
@@ -92,7 +103,8 @@ export class JobManager {
       }
       return {
         jobs: parsed.jobs,
-        lastHeartbeatAt: parsed.lastHeartbeatAt ?? null
+        lastHeartbeatAt: parsed.lastHeartbeatAt ?? null,
+        chatMode: parsed.chatMode ?? "cursor"
       };
     } catch {
       return { ...EMPTY_JOBS_FILE };
