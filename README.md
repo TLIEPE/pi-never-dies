@@ -1,5 +1,7 @@
 # pi-never-dies
 
+**Hinweis für Raspberry Pi:** Beim ersten `npm install` auf dem Pi wird sqlite3 kompiliert (wegen @cursor/sdk). Dafür einmal `sudo apt install build-essential -y` ausführen.
+
 Spätere Migration auf eine echte Datenbank (z.B. better-sqlite3) ist geplant. Der Job-Manager ist bewusst so designed, dass der Storage-Layer leicht ausgetauscht werden kann.
 
 Minimalistisches, stabiles und produktionsreifes Node.js Agenten-Brain fuer den Raspberry Pi.

@@ -72,6 +72,16 @@ export class JobManager {
     await this.writeData(data);
   }
 
+  async getHeartbeat(): Promise<string | null> {
+    const data = await this.readData();
+    return data.lastHeartbeatAt;
+  }
+
+  async getRunningJobsCount(): Promise<number> {
+    const data = await this.readData();
+    return data.jobs.filter((job) => job.status === "running").length;
+  }
+
   private async readData(): Promise<JobsFile> {
     await this.ensureStore();
     const raw = await fs.readFile(this.jobsFilePath, "utf8");

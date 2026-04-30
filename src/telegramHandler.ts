@@ -10,6 +10,8 @@ const helpText = [
   "`/help` - Show command overview",
   "`/cards` - List available A2A cards",
   "`/jobs` - List latest jobs",
+  "`/status` - Show orchestrator status",
+  "`/heartbeat` - Show last heartbeat timestamp",
   "`/plan <text>` - Ask Cursor brain for an action plan",
   "`/job <cardId> | <description>` - Create and run one job via A2A"
 ].join("\n");
@@ -87,6 +89,42 @@ export const buildTelegramBot = (input: {
       await ctx.replyWithMarkdown(`📌 *Letzte Jobs*\n\n${message}`);
     } catch (error) {
       logger.error("Failed to handle /jobs", error);
+      await ctx.reply(friendlyError);
+    }
+  });
+
+  bot.command("status", async (ctx) => {
+    try {
+      const runningJobs = await input.jobManager.getRunningJobsCount();
+      const heartbeat = await input.jobManager.getHeartbeat();
+      const heartbeatText = heartbeat ? new Date(heartbeat).toLocaleString() : "Noch kein Heartbeat";
+      await ctx.replyWithMarkdown(
+        [
+          "🟢 *Orchestrator Status*",
+          "",
+          "System: `online`",
+          `Running jobs: *${runningJobs}*`,
+          `Last heartbeat: _${heartbeatText}_`
+        ].join("\n")
+      );
+    } catch (error) {
+      logger.error("Failed to handle /status", error);
+      await ctx.reply(friendlyError);
+    }
+  });
+
+  bot.command("heartbeat", async (ctx) => {
+    try {
+      const heartbeat = await input.jobManager.getHeartbeat();
+      if (!heartbeat) {
+        await ctx.replyWithMarkdown("💓 Noch kein Heartbeat vorhanden.");
+        return;
+      }
+      await ctx.replyWithMarkdown(
+        `💓 Letzter Heartbeat: _${new Date(heartbeat).toLocaleString()}_`
+      );
+    } catch (error) {
+      logger.error("Failed to handle /heartbeat", error);
       await ctx.reply(friendlyError);
     }
   });
