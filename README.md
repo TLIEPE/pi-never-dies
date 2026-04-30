@@ -57,6 +57,7 @@ npm install
 export TELEGRAM_BOT_TOKEN="123456:your_bot_token"
 export TELEGRAM_ALLOWED_USER_IDS="123456789"
 export CURSOR_API_KEY="cursor_api_key_here"
+export CURSOR_MODEL_ID="composer-2-fast"
 export AZURE_WORKER_BEARER_TOKEN="optional_for_bearer_cards"
 ```
 

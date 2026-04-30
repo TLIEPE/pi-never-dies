@@ -1,14 +1,20 @@
 import { A2ACard, Job } from "./types";
 
 interface CursorAgentLike {
-  prompt: (message: string, options?: { apiKey?: string }) => Promise<{ result?: string }>;
+  prompt: (
+    message: string,
+    options?: { apiKey?: string; model?: { id: string } }
+  ) => Promise<{ result?: string }>;
 }
 
 // Wraps the official Cursor SDK behind one stable project API.
 export class CursorClient {
   private sdkAgent: CursorAgentLike | null = null;
 
-  constructor(private readonly apiKey: string) {}
+  constructor(
+    private readonly apiKey: string,
+    private readonly modelId: string
+  ) {}
 
   async initialize(): Promise<void> {
     if (this.sdkAgent) {
@@ -43,7 +49,10 @@ export class CursorClient {
       ].join("\n\n")
     ].join("\n\n");
 
-    const response = await this.sdkAgent.prompt(mergedPrompt, { apiKey: this.apiKey });
+    const response = await this.sdkAgent.prompt(mergedPrompt, {
+      apiKey: this.apiKey,
+      model: { id: this.modelId }
+    });
     return (response.result ?? "Kein Plan vom Cursor SDK erhalten.").trim();
   }
 
@@ -62,7 +71,10 @@ export class CursorClient {
       `User message: ${message}`
     ].join("\n\n");
 
-    const response = await this.sdkAgent.prompt(mergedPrompt, { apiKey: this.apiKey });
+    const response = await this.sdkAgent.prompt(mergedPrompt, {
+      apiKey: this.apiKey,
+      model: { id: this.modelId }
+    });
     return (response.result ?? "Keine Antwort vom Cursor SDK erhalten.").trim();
   }
 }

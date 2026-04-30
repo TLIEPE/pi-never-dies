@@ -15,7 +15,7 @@ const bootstrap = async (): Promise<void> => {
   const a2aClient = new A2AClient(config.a2aCardsFilePath);
   await a2aClient.ensureCardsFile();
 
-  const cursorClient = new CursorClient(config.cursorApiKey);
+  const cursorClient = new CursorClient(config.cursorApiKey, config.cursorModelId);
   const actions = new Actions(jobManager, a2aClient, cursorClient);
 
   const bot = buildTelegramBot({

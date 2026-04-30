@@ -47,6 +47,7 @@ export interface AppConfig {
   telegramBotToken: string;
   telegramAllowedUserIds: number[];
   cursorApiKey: string;
+  cursorModelId: string;
   jobsFilePath: string;
   heartbeatIntervalMs: number;
   a2aCardsFilePath: string;

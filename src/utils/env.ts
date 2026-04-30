@@ -22,6 +22,7 @@ const must = (value: string | undefined, key: string): string => {
 export const loadConfig = (): AppConfig => {
   const telegramBotToken = must(process.env.TELEGRAM_BOT_TOKEN, "TELEGRAM_BOT_TOKEN");
   const cursorApiKey = must(process.env.CURSOR_API_KEY, "CURSOR_API_KEY");
+  const cursorModelId = must(process.env.CURSOR_MODEL_ID, "CURSOR_MODEL_ID");
   const telegramAllowedUserIds = parseAllowedUserIds(
     process.env.TELEGRAM_ALLOWED_USER_IDS ?? ""
   );
@@ -40,6 +41,7 @@ export const loadConfig = (): AppConfig => {
     telegramBotToken,
     telegramAllowedUserIds,
     cursorApiKey,
+    cursorModelId,
     jobsFilePath,
     heartbeatIntervalMs,
     a2aCardsFilePath
