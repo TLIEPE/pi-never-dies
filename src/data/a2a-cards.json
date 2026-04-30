@@ -1,0 +1,13 @@
+[
+  {
+    "id": "azure-worker",
+    "name": "Azure Worker Agent",
+    "description": "Executes cloud-side jobs in Azure.",
+    "endpoint": "https://example.azurewebsites.net/a2a/invoke",
+    "capabilities": ["execute-job", "status"],
+    "auth": {
+      "type": "bearer",
+      "tokenEnv": "AZURE_WORKER_BEARER_TOKEN"
+    }
+  }
+]
