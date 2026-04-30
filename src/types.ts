@@ -1,5 +1,12 @@
 export type JobStatus = "pending" | "running" | "completed" | "failed";
 export type ChatMode = "grok" | "local";
+export type ChatRole = "user" | "assistant";
+
+export interface ChatHistoryEntry {
+  role: ChatRole;
+  content: string;
+  createdAt: string;
+}
 
 export interface Job {
   id: string;
@@ -17,6 +24,7 @@ export interface JobsFile {
   jobs: Job[];
   lastHeartbeatAt: string | null;
   chatMode: ChatMode;
+  chatMemory: Record<string, ChatHistoryEntry[]>;
 }
 
 export interface A2ACard {

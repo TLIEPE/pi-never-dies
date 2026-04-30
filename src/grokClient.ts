@@ -6,6 +6,11 @@ interface GrokChatResponse {
   }>;
 }
 
+interface GrokMessage {
+  role: "system" | "user" | "assistant";
+  content: string;
+}
+
 const sleep = async (ms: number): Promise<void> =>
   new Promise((resolve) => {
     setTimeout(resolve, ms);
@@ -18,7 +23,7 @@ export class GrokClient {
     private readonly baseUrl: string
   ) {}
 
-  async chatFreestyle(message: string): Promise<string> {
+  async chatFreestyle(message: string, history: Array<{ role: "user" | "assistant"; content: string }>): Promise<string> {
     const maxAttempts = 3;
     let lastError: Error | null = null;
 
@@ -36,17 +41,7 @@ export class GrokClient {
           body: JSON.stringify({
             model: this.modelId,
             temperature: 0.5,
-            messages: [
-              {
-                role: "system",
-                content:
-                  "You are pi-never-dies, a concise friendly assistant. Answer in German unless asked otherwise."
-              },
-              {
-                role: "user",
-                content: message
-              }
-            ]
+            messages: this.buildMessages(message, history)
           }),
           signal: controller.signal
         });
@@ -104,5 +99,26 @@ export class GrokClient {
     }
 
     throw lastError ?? new Error("Grok API request failed.");
+  }
+
+  private buildMessages(
+    message: string,
+    history: Array<{ role: "user" | "assistant"; content: string }>
+  ): GrokMessage[] {
+    return [
+      {
+        role: "system",
+        content:
+          "You are pi-never-dies, a concise friendly assistant. Answer in German unless asked otherwise."
+      },
+      ...history.map((entry) => ({
+        role: entry.role,
+        content: entry.content
+      })),
+      {
+        role: "user",
+        content: message
+      }
+    ];
   }
 }

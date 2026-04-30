@@ -1,8 +1,13 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { ChatMode, Job, JobsFile, JobStatus } from "./types";
+import { ChatHistoryEntry, ChatMode, Job, JobsFile, JobStatus } from "./types";
 
-const EMPTY_JOBS_FILE: JobsFile = { jobs: [], lastHeartbeatAt: null, chatMode: "local" };
+const EMPTY_JOBS_FILE: JobsFile = {
+  jobs: [],
+  lastHeartbeatAt: null,
+  chatMode: "local",
+  chatMemory: {}
+};
 
 export class JobManager {
   constructor(private readonly jobsFilePath: string) {}
@@ -93,6 +98,23 @@ export class JobManager {
     await this.writeData(data);
   }
 
+  async getChatHistory(userId: string): Promise<ChatHistoryEntry[]> {
+    const data = await this.readData();
+    return data.chatMemory[userId] ?? [];
+  }
+
+  async appendChatHistory(
+    userId: string,
+    entries: ChatHistoryEntry[],
+    maxEntries: number
+  ): Promise<void> {
+    const data = await this.readData();
+    const current = data.chatMemory[userId] ?? [];
+    const merged = [...current, ...entries];
+    data.chatMemory[userId] = merged.slice(Math.max(0, merged.length - maxEntries));
+    await this.writeData(data);
+  }
+
   private async readData(): Promise<JobsFile> {
     await this.ensureStore();
     const raw = await fs.readFile(this.jobsFilePath, "utf8");
@@ -107,7 +129,8 @@ export class JobManager {
         chatMode:
           parsed.chatMode === "grok" || parsed.chatMode === "local"
             ? parsed.chatMode
-            : "local"
+            : "local",
+        chatMemory: parsed.chatMemory && typeof parsed.chatMemory === "object" ? parsed.chatMemory : {}
       };
     } catch {
       return { ...EMPTY_JOBS_FILE };

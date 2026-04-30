@@ -207,14 +207,14 @@ export const buildTelegramBot = (input: {
     let slowNotice: NodeJS.Timeout | null = null;
     try {
       const currentMode = await input.actions.getChatMode();
-      const typingDelayMs = currentMode === "grok" ? 3500 : 5000;
+      const typingDelayMs = 8000;
       let slowNoticeSent = false;
       slowNotice = setTimeout(async () => {
         slowNoticeSent = true;
         await ctx.reply("⏳ Dauert kurz, ich arbeite noch an der Antwort...");
       }, typingDelayMs);
 
-      const reply = await input.actions.chat(ctx.message.text);
+      const reply = await input.actions.chat(ctx.message.text, String(ctx.from?.id ?? "unknown"));
       clearTimeout(slowNotice);
       const safeReply = reply.length > 3500 ? `${reply.slice(0, 3500)}...` : reply;
       await ctx.reply(slowNoticeSent ? `💬 Danke fuers Warten!\n${safeReply}` : `💬 ${safeReply}`);

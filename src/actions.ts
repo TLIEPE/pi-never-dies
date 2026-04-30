@@ -2,7 +2,7 @@ import { A2AClient } from "./a2aClient";
 import { CursorClient } from "./cursorClient";
 import { GrokClient } from "./grokClient";
 import { JobManager } from "./jobManager";
-import { ChatMode, Job } from "./types";
+import { ChatHistoryEntry, ChatMode, Job } from "./types";
 
 export class Actions {
   constructor(
@@ -70,11 +70,11 @@ export class Actions {
     await this.jobManager.setChatMode(mode);
   }
 
-  async chat(message: string): Promise<string> {
+  async chat(message: string, userId: string): Promise<string> {
     const mode = await this.getChatMode();
     if (mode === "grok") {
       try {
-        return await this.grokClient.chatFreestyle(message);
+        return await this.chatViaGrok(message, userId);
       } catch (error) {
         const fallback = await this.chatViaLocalLlmA2A(message);
         const reason = error instanceof Error ? error.message : "Unknown Grok API error";
@@ -100,6 +100,23 @@ export class Actions {
 
     const resultText = this.extractA2AText(response.result);
     return this.stripThinking(resultText);
+  }
+
+  private async chatViaGrok(message: string, userId: string): Promise<string> {
+    const history = await this.jobManager.getChatHistory(userId);
+    const compactHistory = history.map((entry) => ({
+      role: entry.role,
+      content: entry.content
+    }));
+    const reply = await this.grokClient.chatFreestyle(message, compactHistory);
+
+    const now = new Date().toISOString();
+    const newEntries: ChatHistoryEntry[] = [
+      { role: "user", content: message, createdAt: now },
+      { role: "assistant", content: reply, createdAt: now }
+    ];
+    await this.jobManager.appendChatHistory(userId, newEntries, 30);
+    return reply;
   }
 
   private extractA2AText(result: unknown): string {
