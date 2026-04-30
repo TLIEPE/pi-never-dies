@@ -101,6 +101,52 @@ export class GrokClient {
     throw lastError ?? new Error("Grok API request failed.");
   }
 
+  async suggestTelegramCommand(message: string): Promise<string | null> {
+    const response = await fetch(`${this.baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: this.modelId,
+        temperature: 0,
+        messages: [
+          {
+            role: "system",
+            content: [
+              "Map user intent to ONE Telegram command.",
+              "Allowed commands: /help, /cards, /jobs, /status, /heartbeat, /chatmode grok, /chatmode local, /plan <text>, /job <cardId> | <beschreibung>.",
+              "If no useful command fits, return exactly NONE.",
+              "Return only the command text or NONE."
+            ].join(" ")
+          },
+          {
+            role: "user",
+            content: message
+          }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = (await response.json()) as GrokChatResponse;
+    const content = data.choices?.[0]?.message?.content;
+    const text =
+      typeof content === "string"
+        ? content.trim()
+        : Array.isArray(content)
+          ? content.map((part) => part.text ?? "").join(" ").trim()
+          : "";
+    if (!text || text.toUpperCase() === "NONE") {
+      return null;
+    }
+    return text.split("\n")[0]?.trim() ?? null;
+  }
+
   private buildMessages(
     message: string,
     history: Array<{ role: "user" | "assistant"; content: string }>

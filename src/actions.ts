@@ -84,6 +84,10 @@ export class Actions {
     return this.chatViaLocalLlmA2A(message);
   }
 
+  async suggestTelegramCommand(message: string): Promise<string | null> {
+    return this.grokClient.suggestTelegramCommand(message);
+  }
+
   private async chatViaLocalLlmA2A(message: string): Promise<string> {
     const response = await this.a2aClient.invokeCard("tesla-sentiment-llm", {
       action: "generate",

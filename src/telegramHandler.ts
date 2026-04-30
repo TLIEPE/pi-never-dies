@@ -20,6 +20,63 @@ const helpText = [
 
 const friendlyError = "Etwas ist schiefgelaufen. Bitte versuche es gleich erneut 🙏";
 
+const parseFreestyleIntent = (
+  text: string
+): "help" | "cards" | "jobs" | "status" | "heartbeat" | "chatmode-grok" | "chatmode-local" | null => {
+  const t = text.toLowerCase();
+  if (
+    t.includes("help") ||
+    t.includes("hilfe") ||
+    t.includes("kommandos") ||
+    t.includes("commands") ||
+    t.includes("what can you do")
+  )
+    return "help";
+  if (
+    t.includes("karte") ||
+    t.includes("karten") ||
+    t.includes("card") ||
+    t.includes("cards") ||
+    t.includes("agent card") ||
+    t.includes("a2a card")
+  )
+    return "cards";
+  if (
+    t.includes("jobs") ||
+    t.includes("job list") ||
+    t.includes("aufgaben") ||
+    t.includes("tasks") ||
+    t.includes("recent jobs")
+  )
+    return "jobs";
+  if (
+    t.includes("status") ||
+    t.includes("zustand") ||
+    t.includes("system state") ||
+    t.includes("system status")
+  )
+    return "status";
+  if (t.includes("heartbeat") || t.includes("alive check") || t.includes("last ping")) return "heartbeat";
+  if (
+    t.includes("grok mode") ||
+    t.includes("grok modus") ||
+    t.includes("switch to grok") ||
+    t.includes("stell auf grok") ||
+    t.includes("umschalten auf grok")
+  )
+    return "chatmode-grok";
+  if (
+    t.includes("local mode") ||
+    t.includes("lokal modus") ||
+    t.includes("local llm") ||
+    t.includes("switch to local") ||
+    t.includes("stell auf local") ||
+    t.includes("umschalten auf local")
+  )
+    return "chatmode-local";
+  return null;
+};
+
 export const buildTelegramBot = (input: {
   botToken: string;
   allowedUserIds: number[];
@@ -206,6 +263,51 @@ export const buildTelegramBot = (input: {
     }
     let slowNotice: NodeJS.Timeout | null = null;
     try {
+      const intent = parseFreestyleIntent(ctx.message.text);
+      if (intent === "help") {
+        await ctx.replyWithMarkdown(helpText);
+        return;
+      }
+      if (intent === "cards") {
+        await ctx.reply("Nutze `/cards` fuer die A2A-Kartenliste.");
+        await ctx.reply("/cards");
+        return;
+      }
+      if (intent === "jobs") {
+        await ctx.reply("Nutze `/jobs` fuer die letzten Jobs.");
+        await ctx.reply("/jobs");
+        return;
+      }
+      if (intent === "status") {
+        await ctx.reply("Nutze `/status` fuer den Systemstatus.");
+        await ctx.reply("/status");
+        return;
+      }
+      if (intent === "heartbeat") {
+        await ctx.reply("Nutze `/heartbeat` fuer den letzten Heartbeat.");
+        await ctx.reply("/heartbeat");
+        return;
+      }
+      if (intent === "chatmode-grok") {
+        await input.actions.setChatMode("grok");
+        await ctx.reply("✅ Chat-Mode auf grok gesetzt.");
+        await ctx.reply("/chatmode grok");
+        return;
+      }
+      if (intent === "chatmode-local") {
+        await input.actions.setChatMode("local");
+        await ctx.reply("✅ Chat-Mode auf local gesetzt.");
+        await ctx.reply("/chatmode local");
+        return;
+      }
+
+      const suggestedCommand = await input.actions.suggestTelegramCommand(ctx.message.text);
+      if (suggestedCommand) {
+        await ctx.reply("📋 Ich vermute, dieser Befehl passt. Einfach kopieren:");
+        await ctx.reply(suggestedCommand);
+        return;
+      }
+
       const currentMode = await input.actions.getChatMode();
       const typingDelayMs = 8000;
       let slowNoticeSent = false;
