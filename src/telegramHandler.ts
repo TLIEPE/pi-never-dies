@@ -204,11 +204,24 @@ export const buildTelegramBot = (input: {
     if (ctx.message.text.startsWith("/")) {
       return;
     }
+    let slowNotice: NodeJS.Timeout | null = null;
     try {
+      const currentMode = await input.actions.getChatMode();
+      const typingDelayMs = currentMode === "grok" ? 3500 : 5000;
+      let slowNoticeSent = false;
+      slowNotice = setTimeout(async () => {
+        slowNoticeSent = true;
+        await ctx.reply("⏳ Dauert kurz, ich arbeite noch an der Antwort...");
+      }, typingDelayMs);
+
       const reply = await input.actions.chat(ctx.message.text);
+      clearTimeout(slowNotice);
       const safeReply = reply.length > 3500 ? `${reply.slice(0, 3500)}...` : reply;
-      await ctx.reply(`💬 ${safeReply}`);
+      await ctx.reply(slowNoticeSent ? `💬 Danke fuers Warten!\n${safeReply}` : `💬 ${safeReply}`);
     } catch (error) {
+      if (slowNotice) {
+        clearTimeout(slowNotice);
+      }
       logger.error("Failed to handle freestyle chat", error);
       await ctx.reply(
         "Ich konnte gerade nicht antworten. Prüfe bitte den Chat-Mode und die A2A-Card-Verbindung."
